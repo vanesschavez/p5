@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -155,6 +157,7 @@ public class MapApp {
 		sc.close();
 	}
 
+	
 	/**
 	 * Reads and parses the input file passed as argument create a
 	 * NavigationGraph object. The edge property names required for
@@ -174,11 +177,39 @@ public class MapApp {
 	 *             	than as described in the header or 
 	 *             if any property value is not numeric 
 	 */
-
-	public static NavigationGraph createNavigationGraphFromMapFile(String graphFilepath){
-			// TODO: read/parse the input file graphFilepath and create
-			// NavigationGraph with vertices and edges
-			return null;
+	public static NavigationGraph createNavigationGraphFromMapFile(String graphFilepath) 
+			throws FileNotFoundException, InvalidFileException{
+		
+		//TODO check this method is correct or not
+		
+		NavigationGraph toReturn = null;	//Navigation Graph to return
+		String[] toPass;					//String array to pass into the function
+		String temp = "";
+		
+		//Creates Scanner
+		File file = new File(graphFilepath);
+		Scanner in;
+		
+		try{
+			in = new Scanner(file);
+		}catch(Exception e){
+			throw new InvalidFileException("File is invlid");
+		}
+		
+		//check file is not over
+		while(in.hasNext()){
+			temp = temp + in.nextLine() + "\n";	//adding\n to ensure we can split it
+		}
+		
+		//create array from the string
+		toPass = temp.split("\n");	//Create array to pass into Navigation Graph
+		
+		toReturn = new NavigationGraph(toPass);
+		
+		in.close();
+		
+		
+		return toReturn;
 
 	}
 
