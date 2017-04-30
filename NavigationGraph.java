@@ -289,15 +289,96 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-	@Override
+@Override
 	public List<Path> getShortestRoute(Location src, Location dest, String edgePropertyName) {
+		boolean found = false;
 		
+		// find index in edgeProperties array for the property of interest
+		for (int i = 0; i < edgePropertyNames.length; i++) {
+			if edgePropertyNames[i].equals(edgePropertyName) 
+				int propertyIndex = i;
+		}
 		
+		GraphNode<Location, Path> current;
+		ArrayList<Path> toReturn = new ArrayList<Path>; 
+		int[] distances = new int[graphNodes.getSize()];
+		ArrayList<Location> unvisited = new ArrayList<Location>;
+		ArrayList<Location> visited = new ArrayList<Location>;
 		
+		for (int i = 0; i < graphNodes.size; i++) {
+			if (graphNodes.get(i).vertexData.equals(src)) 
+				current = graphNodes.get(i);
+		}
+		distances[findPositionInGraphNodes(current)] = 0;
 		
-		// TODO Auto-generated method stub
+		while (!found) {
+			current = getSmallestNode(unvisited, propertyIndex);
+			unvisited.remove(current);
+			visited.add(current);
+			if current.vertexData.equals(dest) found = true;
+			evaluateNeighbors(current, visited, propertyIndex, unvisited);
+		}
+		
+		while (visited.size > 1) {
+			toReturn.add(findEdge(visited.get(visited.size - 1)), visited.get(visited.size - 2), 0);
+		}
+		
+		return toReturn;
+	}
+	
+	private Path findEdge(GraphNode<Location, Path> dest, GraphNode<Location, Path> src) {
+		for (int i = 0 ; i < src.getOutEdges.length; i++) {
+			if src.getOutEdges[i].getDestination.equals(dest) {
+				return src.getOutEdges[i];
+			}
+		}
 		return null;
 	}
+	
+	private GraphNode<Location, Path> getSmallestNode(ArrayList<GraphNode<Location, Path>> unvisited, int propertyIndex) {
+		GraphNode<Location, Path> min = unvisited.get(0);
+		double minDistance = distances[findPositionInGraphNodes(min)];
+		
+		// find min
+		for (int i = 1; i < unvisited.size(); i++) {
+			if (distances[findPositionInGraphNodes(unvisited.get(i))] < minDistance) {
+				min = unvisited.get(i);
+				minDistance = distances[findPositionInGraphNodes(unvisited.get(i))];
+			}
+		}
+		return min;
+	}
+	
+	private int findPositionInGraphNodes(GraphNode<Location, Path> node) {
+		for (int i = 0; i < graphNodes.size(); i ++) {
+			if (graphNodes.get(i).equals(node)) return i;
+		}
+		return -1;
+	}
+
+	private void evaluateNeighbors(GraphNode<Location, Path> node, ArrayList<GraphNode<Location, Path> visited, 
+			int propertyIndex, ArrayList<GraphNode<Location, Path> unvisited) {
+		// make an ArrayList of each of node's unvisited neighbors
+		ArrayList<GraphNode<Location, Path> validPaths = new ArrayList<GraphNode<Location, Path>;
+		Path[] paths = node.getOutEdges();
+		for (int i = 0; i < paths.length; i++) {
+			for (int j = 0; j < visited.size; j++) {
+				if (!paths[i].getDestination.equals(visited.get(j)))
+					validPaths.add(paths[i]);
+			}
+		}
+		for (int i = 0; i < validPaths.size; i++) {
+			GraphNode<Location, Path> destination = validPaths.get(i).getDestination();
+			double distance = validPaths.get(i).pathProperties[propertyIndex];
+			if (distances[findPositionInGraphNodes(destination)] != null) 
+				distance += distances[findPositionInGraphNodes(destination);
+			if (distances[findPositionInGraphNodes(destination)] > distance)
+				distances[findPositionInGraphNodes(destination)] = distance;
+			unvisited.add(destination);
+		}
+		
+	}
+
 
 
 	@Override
