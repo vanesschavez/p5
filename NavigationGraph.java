@@ -187,11 +187,11 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 		ArrayList<Location> toReturn = new ArrayList<Location>();
 
 		//iterate through list
-			for(int x = 0; x < graphNodes.size(); x++){
+		for(int x = 0; x < graphNodes.size(); x++){
 
-				toReturn.add(graphNodes.get(x).getVertexData());
+			toReturn.add(graphNodes.get(x).getVertexData());
 
-			}
+		}
 
 
 		return toReturn;
@@ -241,7 +241,7 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 			//check if it is the location we want
 			if(graphNodes.get(x).getVertexData().equals(src)){
 
-				 return graphNodes.get(x).getOutEdges();
+				return graphNodes.get(x).getOutEdges();
 
 			}
 		}
@@ -304,35 +304,15 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-@Override
+	@Override
 	public List<Path> getShortestRoute(Location src, Location dest, String edgePropertyName) {
 
 		//if path is found
 		boolean found = false;
-
 		int propertyIndex = 0;
+
 		// find index in edgeProperties array for the property of interest
-<<<<<<< HEAD
-		int propertyIndex = -1;
-		for (int i = 0; i < edgePropertyNames.length; i++) {
-			if (edgePropertyNames[i].equals(edgePropertyName)) 
-				propertyIndex = i;
-		}
-		
-		GraphNode<Location, Path> current = null;
-		ArrayList<Path> toReturn = new ArrayList<Path>(); 
-		double[] distances = new double[graphNodes.size()];
-		ArrayList<Location> unvisited = new ArrayList<Location>();
-		ArrayList<Location> visited = new ArrayList<Location>();
-		
-		for (int i = 0; i < graphNodes.size(); i++) {
-			if (graphNodes.get(i).getVertexData().equals(src)) 
-				current = graphNodes.get(i);
-		}
-		distances[findPositionInGraphNodes(current.getVertexData())] = 0;
-		
-=======
-		for (int i = 0; i < propertyNames.length; i++) {
+		(int i = 0; i < propertyNames.length; i++) {
 			if (propertyNames[i].equals(edgePropertyName) ){
 				propertyIndex = i;
 			}
@@ -351,20 +331,11 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 		distances[findPositionInGraphNodes(current)] = 0;
 
 
->>>>>>> origin/master
+
 		while (!found) {
 			current = getSmallestNode(unvisited, propertyIndex, distances);
 			unvisited.remove(current);
-<<<<<<< HEAD
-			visited.add(current.getVertexData());
-			if (current.getVertexData().equals(dest)) found = true;
-			evaluateNeighbors(current, visited, propertyIndex, unvisited, distances);
-		}
-		
-		while (visited.size() > 1) {
-			toReturn.add(findEdge(visited.get(visited.size() - 1), visited.get(visited.size() - 2)));
-			visited.remove(visited.size() - 2);
-=======
+
 			visited.add(current);
 			if (current.getVertexData().equals(dest) ){
 				found = true;
@@ -374,37 +345,23 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 
 		while (visited.size() > 1) {
 			toReturn.add( findEdge(visited.get(visited.size() - 1), visited.get(visited.size() - 2)));
->>>>>>> origin/master
+
 		}
 
 		return toReturn;
 	}
-<<<<<<< HEAD
-	
-	private Path findEdge(Location dest, Location src) {
-		for (int i = 0 ; i < graphNodes.get(findPositionInGraphNodes(src)).getOutEdges().size(); i++) {
-			if (graphNodes.get(findPositionInGraphNodes(src)).getOutEdges().get(i).getDestination().equals(dest)) {
-				return graphNodes.get(findPositionInGraphNodes(src)).getOutEdges().get(i);
-=======
 
 	private Path findEdge(GraphNode<Location, Path> dest, GraphNode<Location, Path> src) {
 		for (int i = 0 ; i < src.getOutEdges().size(); i++) {
 			if (src.getOutEdges().get(i).getDestination().equals(dest)) {
 				return src.getOutEdges().get(i);
->>>>>>> origin/master
 			}
 		}
 		return null;
 	}
-<<<<<<< HEAD
-	
-	private GraphNode<Location, Path> getSmallestNode(ArrayList<Location> unvisited, int propertyIndex, double[] distances) {
-		Location min = unvisited.get(0);
-=======
 
 	private GraphNode<Location, Path> getSmallestNode(ArrayList<GraphNode<Location, Path>> unvisited, int propertyIndex) {
 		GraphNode<Location, Path> min = unvisited.get(0);
->>>>>>> origin/master
 		double minDistance = distances[findPositionInGraphNodes(min)];
 
 		// find min
@@ -416,26 +373,17 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 		}
 		return graphNodes.get(findPositionInGraphNodes(min));
 	}
-<<<<<<< HEAD
-	
-	private int findPositionInGraphNodes(Location location) {
-=======
 
 	private int findPositionInGraphNodes(GraphNode<Location, Path> node) {
->>>>>>> origin/master
 		for (int i = 0; i < graphNodes.size(); i ++) {
 			if (graphNodes.get(i).equals(location)) return i;
 		}
 		return -1;
 	}
 
-<<<<<<< HEAD
-	private void evaluateNeighbors(GraphNode<Location, Path> node, ArrayList<Location> visited, 
-			int propertyIndex, ArrayList<Location> unvisited, double[] distances) {
-=======
+
 	private void evaluateNeighbors(GraphNode<Location, Path> node, ArrayList<GraphNode<Location, Path>> visited,
 			int propertyIndex, ArrayList<GraphNode<Location, Path>> unvisited) {
->>>>>>> origin/master
 		// make an ArrayList of each of node's unvisited neighbors
 		ArrayList<Path> validPaths = new ArrayList<Path>();
 		List<Path> paths = node.getOutEdges();
@@ -445,22 +393,16 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 					validPaths.add(paths.get(i));
 			}
 		}
-<<<<<<< HEAD
-		for (int i = 0; i < validPaths.size(); i++) {
-			Location destination = validPaths.get(i).getDestination();
-			double distance = validPaths.get(i).getProperties().get(propertyIndex);
-			if (distances[findPositionInGraphNodes(destination)] == 0) 
-				distance += distances[findPositionInGraphNodes(destination)];
-=======
+
 		for (int i = 0; i < validPaths.size; i++) {
 			GraphNode<Location, Path> destination = validPaths.get(i).getDestination();
 			double distance = validPaths.get(i).pathProperties[propertyIndex];
 			if (distances[findPositionInGraphNodes(destination)] != null)
 				distance += distances[findPositionInGraphNodes(destination);
->>>>>>> origin/master
-			if (distances[findPositionInGraphNodes(destination)] > distance)
-				distances[findPositionInGraphNodes(destination)] = distance;
-			unvisited.add(destination);
+
+				if (distances[findPositionInGraphNodes(destination)] > distance)
+					distances[findPositionInGraphNodes(destination)] = distance;
+				unvisited.add(destination);
 		}
 
 	}
@@ -476,19 +418,19 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 		String ret = "";
 
 		for(int x = 0; x < graphNodes.size(); x++){
-				for(int l = 0; l < graphNodes.get(x).getOutEdges().size(); l++){
-					ret += graphNodes.get(x).getOutEdges().get(l).getSource() + " ";
+			for(int l = 0; l < graphNodes.get(x).getOutEdges().size(); l++){
+				ret += graphNodes.get(x).getOutEdges().get(l).getSource() + " ";
 
-					for(int m = 0; m < graphNodes.get(x).getOutEdges().get(l).getProperties().size(); m++){
-						ret += graphNodes.get(x).getOutEdges().get(l).getProperties().get(m) + " ";
-					}
-					ret += graphNodes.get(x).getOutEdges().get(l).getDestination();
-					if(l+1==graphNodes.get(x).getOutEdges().size()){
-						ret += "\n";
-					}else{
-						ret += ", ";
-					}
+				for(int m = 0; m < graphNodes.get(x).getOutEdges().get(l).getProperties().size(); m++){
+					ret += graphNodes.get(x).getOutEdges().get(l).getProperties().get(m) + " ";
 				}
+				ret += graphNodes.get(x).getOutEdges().get(l).getDestination();
+				if(l+1==graphNodes.get(x).getOutEdges().size()){
+					ret += "\n";
+				}else{
+					ret += ", ";
+				}
+			}
 		}
 
 		return ret;
