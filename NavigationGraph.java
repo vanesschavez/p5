@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // Semester:         CS367 Spring 2016
 // PROJECT:          p5
-// FILE:             Interval.java
+// FILE:             NavigationGraph.java
 //
 // TEAM:    Team 191
 // Authors:
@@ -11,17 +11,22 @@
 //
 //////////////////////////// 80 columns wide //////////////////////////////////
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+/**
+ * This class is called on by the MapApp.java class; it contains all the functions
+ * necessary for the program to run.
+ * <p>Bugs: no known bugs
+ *
+ * @author Roberto O, Vanessa C, Aleysha B
+ */
 
 public class NavigationGraph implements GraphADT<Location, Path> {
-
-	//TODO: add the private variables
+	//holds all content from file
 	private ArrayList<GraphNode<Location, Path>> graphNodes;
+	//holds the immutable variables in the file
 	private String[] propertyNames;
-
-
-	//TODO the constructor method
 
 	/*
 	 * Constructs new Navigation Graph to represent locations and paths
@@ -43,7 +48,8 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 
 		for(int l = 0; l < numberOfProperties; l++){
 
-			propertyNames[l] = edgePropertyNames[2+l];
+			propertyNames[l] = edgePropertyNames[0].split(" ")[2+l];
+			//System.out.print(Arrays.toString(propertyNames));
 
 		}
 
@@ -118,7 +124,11 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-	@Override
+	/**
+	 * Adds a point to the graph, calls GraphNodeHelper method.
+	 * @param vertex - the location to be added
+	 * @throws IllegalArgumentException - if vertex is not valid
+	 */
 	public void addVertex(Location vertex) {
 
 		if(vertex == null){
@@ -131,10 +141,13 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 
 	}
 
-	/*
+	/**
 	 * Adds graphNode if its a new graph node
 	 * will return this graphNode if it is new
 	 * or existing one if it already exists
+	 * @param toAdd - the GraphNode to be added
+	 * @return GraphNode - the GraphNode object to be added into tree
+	 *
 	 */
 	private GraphNode<Location,Path> addVertexHelper(GraphNode<Location,Path> toAdd){
 
@@ -158,7 +171,15 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-	@Override
+	/**
+	 * This method adds an edge to the graph.
+	 *
+	 * @param src - the start of edge
+	 * @param  dest - the end of the edge
+	 * @param edge - the edge to be added between src & dest
+	 * @throws IllegalArgumentException - if src, dest, or edge are not valid
+	 *
+	 */
 	public void addEdge(Location src, Location dest, Path edge) {
 
 		//iterate through list check if we already have the graph node
@@ -182,7 +203,11 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-	@Override
+	/**
+	 * returns a list of the vertices in the graph.
+	 * @return toReturn - an ArrayList<Location> of all the vertices in the graph
+	 */
+
 	public List<Location> getVertices() {
 
 		ArrayList<Location> toReturn = new ArrayList<Location>();
@@ -199,7 +224,15 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-	@Override
+	/**
+	 * This method iterates through all edges and checks whether
+	 * an edge already exists between two locations
+	 * @param src - start location
+	 * @param dest - end location
+	 * @return null - if no location exists
+	 * @return Path - if a path already exists between two locations
+	 * @throws IllegalArgumentException - if src or dest are not valid
+	 */
 	public Path getEdgeIfExists(Location src, Location dest) {
 
 		if(src == null || dest == null){
@@ -229,7 +262,13 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-	@Override
+	/**
+	 * This method returns a list of paths coming out of a location
+	 * @param src - the location used to check which edges are attributed to it
+	 * @return List<Path> - a list of paths of the outedges coming from location
+	 * @return null - if no outedges are coming from location
+	 * @throws IllegalArgumentException - if src is not valid
+	 */
 	public List<Path> getOutEdges(Location src) {
 
 		if(src == null){
@@ -253,7 +292,13 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 	}
 
 
-	@Override
+	/**
+	 * This method returns a list of locations, which are the adjacent neighbors of
+	 * a particular location.
+	 * @param vertex - location from which to check for adjacent neighbors
+	 * @return list of locations that are the neighbors of the passed location
+	 * @throws IllegalArgumentException - if vertex is not a valid location
+	 */
 	public List<Location> getNeighbors(Location vertex) {
 
 
@@ -293,20 +338,25 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 
 			}
 		}
-		
+
 		return toReturn;
 	}
 
 
-	@Override
+	/**
+	 * Compares all possible routes from a start to and end point; it returns a path
+	 * of the shortest route from src to dest.
+	 * @param src - a start location
+	 * @param dest  an end location
+	 * @param edgePropertyNames - the types of values to be comparing
+	 * @return List<Path> - a list of the shortest path from src to dest
+	 */
 	public List<Path> getShortestRoute(Location src, Location dest, String edgePropertyName) {
-		
+
 		if(src == null || dest == null || edgePropertyName == null){
 			throw new IllegalArgumentException();
 		}
-		
-		
-		boolean found = false;
+
 		int propertyIndex = 0;
 
 		// find index in edgeProperties array for the property of interest
@@ -315,229 +365,150 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 				propertyIndex = i;
 			}
 		}
-		
+
 		//set up Graph Node Wrapper class list
 		ArrayList<GraphNodeWrapper> graphNodeWrappers = new ArrayList<GraphNodeWrapper>();
 		GraphNodeWrapper start = null;
 		GraphNodeWrapper end = null;
-		
+
 		GraphNodeWrapper temp;
 		for(int m = 0; m < graphNodes.size(); m++){
-			
+
 			temp = new GraphNodeWrapper(graphNodes.get(m));
-			
+
 			if(temp.getNode().getVertexData().equals(src)){
 				start = temp;
 			}else if(temp.getNode().getVertexData().equals(dest)){
 				end = temp;
 			}
-			
+
 			graphNodeWrappers.add(temp);
-			
+
 		}
-		
+
 		if(start == end){
 			return new ArrayList<Path>();
 		}
-		
-		
+
+
 		//start of our search
+		start.setStarter();
 		recursiveAlgorithmToFindPath(start, end, graphNodeWrappers, propertyIndex);
-		
-		ArrayList<Path> toReturn = null;
-		
+
+
+		ArrayList<Path> toReturn = new ArrayList<Path>();
+
 		//set up by starting with the end looking at the previous etc.
-		
+
 			temp = end;
 			GraphNode<Location, Path> tempNode;
+
 		while(true){
-			
-			tempNode = temp.getPrevious().getNode();
-			
-			for(int x =0; x < tempNode.getOutEdges().size(); x++){
-				
-				if(temp.getNode().getVertexData().equals(tempNode.getOutEdges().get(x).getDestination())){
-					
-					toReturn.add(tempNode.getOutEdges().get(x));
-					break;
-					
-				}
-				
-			}
-			
-			
-			if(temp == end){
+
+			if(temp == start){
 				break;
 			}
-			
+
+
+			tempNode = temp.getPrevious().getNode();
+
+
+
+			for(int x =0; x < tempNode.getOutEdges().size(); x++){
+
+				if(temp.getNode().getVertexData().equals(tempNode.getOutEdges().get(x).getDestination())){
+
+					toReturn.add(tempNode.getOutEdges().get(x));
+					break;
+
+				}
+
+			}
+
 			temp = temp.getPrevious();
-			
+
 		}
-		
+
 		Collections.reverse(toReturn);
-		
+
 		return toReturn;
-		
+
 	}
-	
-	
-	private void recursiveAlgorithmToFindPath(GraphNodeWrapper starter, GraphNodeWrapper ender, 
+
+	/**
+	 * Recursive algorithm to find the shortest path
+	 * @param starter - a start location
+	 * @param ender  an end location
+	 * @param graphNodeWrappers - a list of wrapers to iterate through
+	 * @param propertyIndex - the index to be used
+	 */
+
+	private void recursiveAlgorithmToFindPath(GraphNodeWrapper starter, GraphNodeWrapper ender,
 			ArrayList<GraphNodeWrapper> graphNodeWrappers, int propertyIndex){
-		
+
 		if (starter == ender){
 			return;
 		}
-		
+
 		GraphNodeWrapper next;
-		
+
+		starter.changeVisited();
+
 		for(int l = 0; l < starter.getNode().getOutEdges().size(); l++){
-			
+
+			//System.out.println(starter.getNode().getVertexData().getName());
+
 			//setting up the next node
 			next = findNode(starter.getNode().getOutEdges().get(l).getDestination(),graphNodeWrappers);
-			
+
+			//System.out.print("...." + next.getNode().getVertexData().getName());
+
 			next.setDistance(starter.getNode().getOutEdges().get(l).getProperties().get(propertyIndex)
 					+ starter.getDistance(), starter);
-			
-			starter.changeVisited();
-			
-			if(next.getVisited()){
+
+			//System.out.println(" distance is " + next.getDistance());
+			//System.out.println("This one is " + starter.getDistance());
+
+
+			if(!next.getVisited()){
 				recursiveAlgorithmToFindPath(next, ender, graphNodeWrappers, propertyIndex);
 			}
-		
+
 		}
-		
+
 		starter.changeVisited();
 		return;
-		
+
 	}
-	
-	
+
+
 	/*
 	 * Method iterates through our list of Wrapper nodes and finds the source
 	 */
 	private GraphNodeWrapper findNode(Location findMe, ArrayList<GraphNodeWrapper> graphNodeWrappers){
-		
+
 		for(int m = 0; m < graphNodeWrappers.size(); m++){
-			
+
 			if(graphNodeWrappers.get(m).getNode().getVertexData().equals(findMe)){
 				return graphNodeWrappers.get(m);
 			}
-			
+
 		}
-		
+
 		return null;
 	}
-	
-	
 
-//		//if path is found
-//		boolean found = false;
-//		int propertyIndex = 0;
-//
-//		// find index in edgeProperties array for the property of interest
-//		for(int i = 0; i < propertyNames.length; i++) {
-//			if (propertyNames[i].equals(edgePropertyName) ){
-//				propertyIndex = i;
-//			}
-//		}
-//		
-//		GraphNode<Location, Path> current = null;
-//		ArrayList<Path> toReturn = new ArrayList<Path>();
-//		int[] distances = new int[graphNodes.size()];
-//		ArrayList<GraphNode<Location,Path>> unvisited = new ArrayList<GraphNode<Location, Path>>();
-//		ArrayList<GraphNode<Location, Path>> visited = new ArrayList<GraphNode<Location, Path>>();
-//
-//		for (int i = 0; i < graphNodes.size(); i++) {
-//			if (graphNodes.get(i).getVertexData().equals(src))
-//				current = graphNodes.get(i);
-//		}
-//		distances[findPositionInGraphNodes(current)] = 0;
-//
-//
-//
-//		while (!found) {
-//			current = getSmallestNode(unvisited, propertyIndex, distances);
-//			unvisited.remove(current);
-//
-//			visited.add(current);
-//			if (current.getVertexData().equals(dest) ){
-//				found = true;
-//			}
-//			evaluateNeighbors(current, visited, propertyIndex, unvisited);
-//		}
-//
-//		while (visited.size() > 1) {
-//			toReturn.add( findEdge(visited.get(visited.size() - 1), visited.get(visited.size() - 2)));
-//
-//		}
-//
-//		return toReturn;
-//	}
-//
-//	private Path findEdge(GraphNode<Location, Path> dest, GraphNode<Location, Path> src) {
-//		for (int i = 0 ; i < src.getOutEdges().size(); i++) {
-//			if (src.getOutEdges().get(i).getDestination().equals(dest)) {
-//				return src.getOutEdges().get(i);
-//			}
-//		}
-//		return null;
-//	}
-//
-//	private GraphNode<Location, Path> getSmallestNode(ArrayList<GraphNode<Location, Path>> unvisited, int propertyIndex) {
-//		
-//		//Get shortest path
-//		GraphNode<Location, Path> min = unvisited.get(0);
-//		double minDistance = distances[findPositionInGraphNodes(min)];
-//
-//		// find min
-//		for (int i = 1; i < unvisited.size(); i++) {
-//			if (distances[findPositionInGraphNodes(unvisited.get(i))] < minDistance) {
-//				min = unvisited.get(i);
-//				minDistance = distances[findPositionInGraphNodes(unvisited.get(i))];
-//			}
-//		}
-//		return graphNodes.get(findPositionInGraphNodes(min));
-//	}
-//
-//	private int findPositionInGraphNodes(GraphNode<Location, Path> node) {
-//		for (int i = 0; i < graphNodes.size(); i ++) {
-//			if (graphNodes.get(i).equals(location)) return i;
-//		}
-//		return -1;
-//	}
-//
-//
-//	private void evaluateNeighbors(GraphNode<Location, Path> node, ArrayList<GraphNode<Location, Path>> visited,
-//			int propertyIndex, ArrayList<GraphNode<Location, Path>> unvisited) {
-//		// make an ArrayList of each of node's unvisited neighbors
-//		ArrayList<Path> validPaths = new ArrayList<Path>();
-//		List<Path> paths = node.getOutEdges();
-//		for (int i = 0; i < paths.size(); i++) {
-//			for (int j = 0; j < visited.size(); j++) {
-//				if (!paths.get(i).getDestination().equals(visited.get(j)))
-//					validPaths.add(paths.get(i));
-//			}
-//		}
-//
-//		for (int i = 0; i < validPaths.size; i++) {
-//			GraphNode<Location, Path> destination = validPaths.get(i).getDestination();
-//			double distance = validPaths.get(i).pathProperties[propertyIndex];
-//			if (distances[findPositionInGraphNodes(destination)] != null)
-//				distance += distances[findPositionInGraphNodes(destination);
-//
-//				if (distances[findPositionInGraphNodes(destination)] > distance)
-//					distances[findPositionInGraphNodes(destination)] = distance;
-//				unvisited.add(destination);
-//		}
-//
-//	}
-
-
-	@Override
+	/**
+	 * returns an array holding all of the property edge names in the graph
+	 * @return propertyNames - the global variable string array holding the EdgePropertyNames
+	 */
 	public String[] getEdgePropertyNames() {
 		return propertyNames;
 	}
-
+/**
+	 * Returns a String of entire contents of graph, formatted in correct style
+	 * @return ret - a string of entire graph and properties
+	 */
 	public String toString() {
 
 		String ret = "";
