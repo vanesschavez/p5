@@ -11,6 +11,7 @@
 //
 //////////////////////////// 80 columns wide //////////////////////////////////
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class NavigationGraph implements GraphADT<Location, Path> {
@@ -271,7 +272,7 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 			if(graphNodes.get(x).getVertexData().equals(vertex)){
 
 				//Iterates through the out edges
-				//Adding to the list the neighebors that vertex is pointing to
+				//Adding to the list the neighbors that vertex is pointing to
 				for(int p = 0; p < graphNodes.get(x).getOutEdges().size(); p++){
 
 					toReturn.add( graphNodes.get(x).getOutEdges().get(p).getDestination() );
@@ -292,120 +293,244 @@ public class NavigationGraph implements GraphADT<Location, Path> {
 
 			}
 		}
-
-
-
-
-
-
-
-
+		
 		return toReturn;
 	}
 
 
 	@Override
 	public List<Path> getShortestRoute(Location src, Location dest, String edgePropertyName) {
-
-		//if path is found
+		
+		if(src == null || dest == null || edgePropertyName == null){
+			throw new IllegalArgumentException();
+		}
+		
+		
 		boolean found = false;
 		int propertyIndex = 0;
 
 		// find index in edgeProperties array for the property of interest
-		(int i = 0; i < propertyNames.length; i++) {
-			if (propertyNames[i].equals(edgePropertyName) ){
+		for(int i = 0; i < propertyNames.length; i++) {
+			if (propertyNames[i].compareTo(edgePropertyName) == 0 ){
 				propertyIndex = i;
 			}
 		}
-
-		GraphNode<Location, Path> current = null;
-		ArrayList<Path> toReturn = new ArrayList<Path>();
-		int[] distances = new int[graphNodes.size()];
-		ArrayList<GraphNode<Location,Path>> unvisited = new ArrayList<GraphNode<Location, Path>>();
-		ArrayList<GraphNode<Location, Path>> visited = new ArrayList<GraphNode<Location, Path>>();
-
-		for (int i = 0; i < graphNodes.size(); i++) {
-			if (graphNodes.get(i).getVertexData().equals(src))
-				current = graphNodes.get(i);
-		}
-		distances[findPositionInGraphNodes(current)] = 0;
-
-
-
-		while (!found) {
-			current = getSmallestNode(unvisited, propertyIndex, distances);
-			unvisited.remove(current);
-
-			visited.add(current);
-			if (current.getVertexData().equals(dest) ){
-				found = true;
+		
+		//set up Graph Node Wrapper class list
+		ArrayList<GraphNodeWrapper> graphNodeWrappers = new ArrayList<GraphNodeWrapper>();
+		GraphNodeWrapper start = null;
+		GraphNodeWrapper end = null;
+		
+		GraphNodeWrapper temp;
+		for(int m = 0; m < graphNodes.size(); m++){
+			
+			temp = new GraphNodeWrapper(graphNodes.get(m));
+			
+			if(temp.getNode().getVertexData().equals(src)){
+				start = temp;
+			}else if(temp.getNode().getVertexData().equals(dest)){
+				end = temp;
 			}
-			evaluateNeighbors(current, visited, propertyIndex, unvisited);
+			
+			graphNodeWrappers.add(temp);
+			
 		}
-
-		while (visited.size() > 1) {
-			toReturn.add( findEdge(visited.get(visited.size() - 1), visited.get(visited.size() - 2)));
-
+		
+		if(start == end){
+			return new ArrayList<Path>();
 		}
-
+		
+		
+		//start of our search
+		recursiveAlgorithmToFindPath(start, end, graphNodeWrappers, propertyIndex);
+		
+		ArrayList<Path> toReturn = null;
+		
+		//set up by starting with the end looking at the previous etc.
+		
+			temp = end;
+			GraphNode<Location, Path> tempNode;
+		while(true){
+			
+			tempNode = temp.getPrevious().getNode();
+			
+			for(int x =0; x < tempNode.getOutEdges().size(); x++){
+				
+				if(temp.getNode().getVertexData().equals(tempNode.getOutEdges().get(x).getDestination())){
+					
+					toReturn.add(tempNode.getOutEdges().get(x));
+					break;
+					
+				}
+				
+			}
+			
+			
+			if(temp == end){
+				break;
+			}
+			
+			temp = temp.getPrevious();
+			
+		}
+		
+		Collections.reverse(toReturn);
+		
 		return toReturn;
+		
 	}
-
-	private Path findEdge(GraphNode<Location, Path> dest, GraphNode<Location, Path> src) {
-		for (int i = 0 ; i < src.getOutEdges().size(); i++) {
-			if (src.getOutEdges().get(i).getDestination().equals(dest)) {
-				return src.getOutEdges().get(i);
-			}
+	
+	
+	private void recursiveAlgorithmToFindPath(GraphNodeWrapper starter, GraphNodeWrapper ender, 
+			ArrayList<GraphNodeWrapper> graphNodeWrappers, int propertyIndex){
+		
+		if (starter == ender){
+			return;
 		}
+		
+		GraphNodeWrapper next;
+		
+		for(int l = 0; l < starter.getNode().getOutEdges().size(); l++){
+			
+			//setting up the next node
+			next = findNode(starter.getNode().getOutEdges().get(l).getDestination(),graphNodeWrappers);
+			
+			next.setDistance(starter.getNode().getOutEdges().get(l).getProperties().get(propertyIndex)
+					+ starter.getDistance(), starter);
+			
+			starter.changeVisited();
+			
+			if(next.getVisited()){
+				recursiveAlgorithmToFindPath(next, ender, graphNodeWrappers, propertyIndex);
+			}
+		
+		}
+		
+		starter.changeVisited();
+		return;
+		
+	}
+	
+	
+	/*
+	 * Method iterates through our list of Wrapper nodes and finds the source
+	 */
+	private GraphNodeWrapper findNode(Location findMe, ArrayList<GraphNodeWrapper> graphNodeWrappers){
+		
+		for(int m = 0; m < graphNodeWrappers.size(); m++){
+			
+			if(graphNodeWrappers.get(m).getNode().getVertexData().equals(findMe)){
+				return graphNodeWrappers.get(m);
+			}
+			
+		}
+		
 		return null;
 	}
+	
+	
 
-	private GraphNode<Location, Path> getSmallestNode(ArrayList<GraphNode<Location, Path>> unvisited, int propertyIndex) {
-		GraphNode<Location, Path> min = unvisited.get(0);
-		double minDistance = distances[findPositionInGraphNodes(min)];
-
-		// find min
-		for (int i = 1; i < unvisited.size(); i++) {
-			if (distances[findPositionInGraphNodes(unvisited.get(i))] < minDistance) {
-				min = unvisited.get(i);
-				minDistance = distances[findPositionInGraphNodes(unvisited.get(i))];
-			}
-		}
-		return graphNodes.get(findPositionInGraphNodes(min));
-	}
-
-	private int findPositionInGraphNodes(GraphNode<Location, Path> node) {
-		for (int i = 0; i < graphNodes.size(); i ++) {
-			if (graphNodes.get(i).equals(location)) return i;
-		}
-		return -1;
-	}
-
-
-	private void evaluateNeighbors(GraphNode<Location, Path> node, ArrayList<GraphNode<Location, Path>> visited,
-			int propertyIndex, ArrayList<GraphNode<Location, Path>> unvisited) {
-		// make an ArrayList of each of node's unvisited neighbors
-		ArrayList<Path> validPaths = new ArrayList<Path>();
-		List<Path> paths = node.getOutEdges();
-		for (int i = 0; i < paths.size(); i++) {
-			for (int j = 0; j < visited.size(); j++) {
-				if (!paths.get(i).getDestination().equals(visited.get(j)))
-					validPaths.add(paths.get(i));
-			}
-		}
-
-		for (int i = 0; i < validPaths.size; i++) {
-			GraphNode<Location, Path> destination = validPaths.get(i).getDestination();
-			double distance = validPaths.get(i).pathProperties[propertyIndex];
-			if (distances[findPositionInGraphNodes(destination)] != null)
-				distance += distances[findPositionInGraphNodes(destination);
-
-				if (distances[findPositionInGraphNodes(destination)] > distance)
-					distances[findPositionInGraphNodes(destination)] = distance;
-				unvisited.add(destination);
-		}
-
-	}
+//		//if path is found
+//		boolean found = false;
+//		int propertyIndex = 0;
+//
+//		// find index in edgeProperties array for the property of interest
+//		for(int i = 0; i < propertyNames.length; i++) {
+//			if (propertyNames[i].equals(edgePropertyName) ){
+//				propertyIndex = i;
+//			}
+//		}
+//		
+//		GraphNode<Location, Path> current = null;
+//		ArrayList<Path> toReturn = new ArrayList<Path>();
+//		int[] distances = new int[graphNodes.size()];
+//		ArrayList<GraphNode<Location,Path>> unvisited = new ArrayList<GraphNode<Location, Path>>();
+//		ArrayList<GraphNode<Location, Path>> visited = new ArrayList<GraphNode<Location, Path>>();
+//
+//		for (int i = 0; i < graphNodes.size(); i++) {
+//			if (graphNodes.get(i).getVertexData().equals(src))
+//				current = graphNodes.get(i);
+//		}
+//		distances[findPositionInGraphNodes(current)] = 0;
+//
+//
+//
+//		while (!found) {
+//			current = getSmallestNode(unvisited, propertyIndex, distances);
+//			unvisited.remove(current);
+//
+//			visited.add(current);
+//			if (current.getVertexData().equals(dest) ){
+//				found = true;
+//			}
+//			evaluateNeighbors(current, visited, propertyIndex, unvisited);
+//		}
+//
+//		while (visited.size() > 1) {
+//			toReturn.add( findEdge(visited.get(visited.size() - 1), visited.get(visited.size() - 2)));
+//
+//		}
+//
+//		return toReturn;
+//	}
+//
+//	private Path findEdge(GraphNode<Location, Path> dest, GraphNode<Location, Path> src) {
+//		for (int i = 0 ; i < src.getOutEdges().size(); i++) {
+//			if (src.getOutEdges().get(i).getDestination().equals(dest)) {
+//				return src.getOutEdges().get(i);
+//			}
+//		}
+//		return null;
+//	}
+//
+//	private GraphNode<Location, Path> getSmallestNode(ArrayList<GraphNode<Location, Path>> unvisited, int propertyIndex) {
+//		
+//		//Get shortest path
+//		GraphNode<Location, Path> min = unvisited.get(0);
+//		double minDistance = distances[findPositionInGraphNodes(min)];
+//
+//		// find min
+//		for (int i = 1; i < unvisited.size(); i++) {
+//			if (distances[findPositionInGraphNodes(unvisited.get(i))] < minDistance) {
+//				min = unvisited.get(i);
+//				minDistance = distances[findPositionInGraphNodes(unvisited.get(i))];
+//			}
+//		}
+//		return graphNodes.get(findPositionInGraphNodes(min));
+//	}
+//
+//	private int findPositionInGraphNodes(GraphNode<Location, Path> node) {
+//		for (int i = 0; i < graphNodes.size(); i ++) {
+//			if (graphNodes.get(i).equals(location)) return i;
+//		}
+//		return -1;
+//	}
+//
+//
+//	private void evaluateNeighbors(GraphNode<Location, Path> node, ArrayList<GraphNode<Location, Path>> visited,
+//			int propertyIndex, ArrayList<GraphNode<Location, Path>> unvisited) {
+//		// make an ArrayList of each of node's unvisited neighbors
+//		ArrayList<Path> validPaths = new ArrayList<Path>();
+//		List<Path> paths = node.getOutEdges();
+//		for (int i = 0; i < paths.size(); i++) {
+//			for (int j = 0; j < visited.size(); j++) {
+//				if (!paths.get(i).getDestination().equals(visited.get(j)))
+//					validPaths.add(paths.get(i));
+//			}
+//		}
+//
+//		for (int i = 0; i < validPaths.size; i++) {
+//			GraphNode<Location, Path> destination = validPaths.get(i).getDestination();
+//			double distance = validPaths.get(i).pathProperties[propertyIndex];
+//			if (distances[findPositionInGraphNodes(destination)] != null)
+//				distance += distances[findPositionInGraphNodes(destination);
+//
+//				if (distances[findPositionInGraphNodes(destination)] > distance)
+//					distances[findPositionInGraphNodes(destination)] = distance;
+//				unvisited.add(destination);
+//		}
+//
+//	}
 
 
 	@Override
